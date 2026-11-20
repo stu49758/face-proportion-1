@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100b1c">
+<title>VIOLET • Face Studio</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0812;--panel:#171124;--panel2:#201632;--line:#38264f;--purple:#a970ff;--pink:#df8cff;--text:#f7f1ff;--muted:#b7a9c9;--good:#9ce6cb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#39205b 0%,#130d20 42%,var(--bg) 75%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+header{max-width:1100px;margin:auto;padding:26px 22px 12px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{font-weight:850;letter-spacing:.12em}.brand span{color:var(--purple)}.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 11px}
+main{max-width:1100px;margin:0 auto;padding:24px 22px 56px}.intro{text-align:center;margin:18px auto 28px;max-width:680px}.eyebrow{color:var(--pink);font-size:12px;letter-spacing:.22em;font-weight:800}.intro h1{font-size:clamp(30px,5vw,48px);margin:10px 0;background:linear-gradient(90deg,#fff,#d7b8ff 60%,#b078ff);-webkit-background-clip:text;background-clip:text;color:transparent}.intro p{color:var(--muted);line-height:1.7;margin:0}
+.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:18px;align-items:start}
+.panel{background:linear-gradient(145deg,rgba(34,24,51,.96),rgba(17,13,27,.96));border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 60px #0005}
+.panel h2{font-size:17px;margin:0 0 14px}.camera{position:relative;background:#050409;border-radius:16px;overflow:hidden;aspect-ratio:4/3;display:grid;place-items:center;border:1px solid #45305e}
+video,canvas#overlay{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}canvas#overlay{pointer-events:none}.placeholder{position:relative;text-align:center;color:#a99bb8;padding:20px;z-index:1}.placeholder .camicon{font-size:38px;display:block;margin-bottom:8px}.camera.live .placeholder{display:none}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:750;cursor:pointer;color:#fff;background:linear-gradient(100deg,#8b4de0,#bd70ff);box-shadow:0 8px 24px #8b4de044}.btn.secondary{background:#2a2038;border:1px solid #4a3761;box-shadow:none;color:#e9dcff}.btn:disabled{opacity:.45;cursor:not-allowed}
+.status{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.6}.privacy{font-size:12px;color:#b9e8d7;background:#10251f;border:1px solid #285545;padding:11px 12px;border-radius:12px;margin-top:14px;line-height:1.6}
+.result-empty{border:1px dashed #59416e;border-radius:16px;padding:22px;text-align:center;color:var(--muted);line-height:1.7}
+.metric{padding:13px;border:1px solid #3b2b50;border-radius:14px;background:#1a1325;margin-top:10px}.metric small{color:var(--muted);display:block;font-size:12px}.metric strong{font-size:19px;display:block;margin-top:4px}.metric p{font-size:13px;color:#c9bdd7;line-height:1.55;margin:6px 0 0}
+.bar{height:7px;background:#382b48;border-radius:10px;margin-top:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#9a5be9,#e19aff);border-radius:10px}
+.note{color:var(--muted);font-size:12px;line-height:1.65;margin-top:14px}
+footer{text-align:center;color:#81748f;font-size:12px;padding:0 20px 28px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}header{padding-top:18px}.intro{margin-top:12px}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="brand">VIOLET <span>•</span> FACE STUDIO</div><div class="tag">AI-STYLE FACE SCAN</div></header>
+<main>
+<section class="intro"><div class="eyebrow">YOUR FEATURES, YOUR STYLE</div><h1>สำรวจรูปหน้าในแบบของคุณ</h1><p>เปิดกล้องเพื่อประเมินรูปทรงใบหน้าและสัดส่วนโดยประมาณ พร้อมไอเดียทรงผมที่เลือกปรับใช้ได้ตามความชอบ</p></section>
+<div class="layout">
+<section class="panel">
+<h2>01 / กล้องถ่ายใบหน้า</h2>
+<div class="camera" id="cameraBox">
+<video id="video" autoplay playsinline muted></video><canvas id="overlay"></canvas>
+<div class="placeholder"><span class="camicon">◉</span>กด “เปิดกล้อง” เพื่อเริ่มต้น<br><small>จัดใบหน้าให้อยู่กลางกรอบและมีแสงเพียงพอ</small></div>
+</div>
+<div class="controls">
+<button class="btn" id="startBtn">เปิดกล้อง</button>
+<button class="btn secondary" id="scanBtn" disabled>วิเคราะห์ใบหน้า</button>
+<button class="btn secondary" id="stopBtn" disabled>ปิดกล้อง</button>
+</div>
+<div class="status" id="status" role="status">สถานะ: ยังไม่ได้เปิดกล้อง</div>
+<div class="privacy">🔒 ความเป็นส่วนตัว: ภาพจะถูกประมวลผลในเบราว์เซอร์ของอุปกรณ์นี้ ไม่ส่งภาพไปยังเซิร์ฟเวอร์ของเว็บไซต์นี้ ปิดกล้องได้ทุกเมื่อ</div>
+</section>
+<aside class="panel">
+<h2>02 / ผลการประเมิน</h2>
+<div id="results"><div class="result-empty">ผลวิเคราะห์จะแสดงตรงนี้<br>เริ่มจากเปิดกล้องและหันหน้าตรงเข้าหากล้อง</div></div>
+<p class="note">การประเมินเป็นเพียงค่าประมาณจากจุดใบหน้าในภาพเดียว ความเอียง มุมกล้อง แสง และทรงผมอาจทำให้ผลคลาดเคลื่อนได้ ไม่ใช่การวินิจฉัยหรือการตัดสินความสวยหล่อ</p>
+</aside>
+</div>
+</main>
+<footer>VIOLET FACE STUDIO · ประมวลผลบนอุปกรณ์ · ไม่มีระบบระบุตัวบุคคล</footer>
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const video=document.getElementById('video'), canvas=document.getElementById('overlay'), ctx=canvas.getContext('2d');
+const startBtn=document.getElementById('startBtn'),scanBtn=document.getElementById('scanBtn'),stopBtn=document.getElementById('stopBtn');
+const statusEl=document.getElementById('status'),cameraBox=document.getElementById('cameraBox'),results=document.getElementById('results');
+let stream=null,landmarker=null,lastLandmarks=null;
+const setStatus=t=>statusEl.textContent='สถานะ: '+t;
+async function loadModel(){
+ if(landmarker)return landmarker;
+ setStatus('กำลังเตรียมระบบตรวจจับใบหน้า (ครั้งแรกอาจใช้เวลาสักครู่)');
+ const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+ landmarker=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},runningMode:'IMAGE',numFaces:1});
+ return landmarker;
+}
+function drawPoints(pts){
+ const w=canvas.width=video.videoWidth,h=canvas.height=video.videoHeight;ctx.clearRect(0,0,w,h);
+ ctx.fillStyle='#d9a6ff';for(const p of pts){ctx.beginPath();ctx.arc(p.x*w,p.y*h,Math.max(1.5,w/380),0,Math.PI*2);ctx.fill();}
+}
+startBtn.onclick=async()=>{
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('เบราว์เซอร์นี้ไม่รองรับกล้อง หรือหน้าเว็บไม่ได้เปิดผ่าน HTTPS');
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+  video.srcObject=stream;await video.play();cameraBox.classList.add('live');
+  startBtn.disabled=true;scanBtn.disabled=false;stopBtn.disabled=false;setStatus('เปิดกล้องแล้ว จัดใบหน้าให้อยู่กลางภาพ');
+ }catch(e){setStatus('เปิดกล้องไม่สำเร็จ: '+e.message+' — ตรวจสอบสิทธิ์การใช้กล้อง');}
+};
+stopBtn.onclick=()=>{
+ if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);
+ cameraBox.classList.remove('live');startBtn.disabled=false;scanBtn.disabled=true;stopBtn.disabled=true;setStatus('ปิดกล้องแล้ว');
+};
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function analyze(p){
+ // MediaPipe landmark indices: approximate facial contour and feature anchors
+ const left=p[234],right=p[454],top=p[10],chin=p[152],foreL=p[127],foreR=p[356],jawL=p[172],jawR=p[397],cheekL=p[93],cheekR=p[323];
+ const width=dist(left,right),height=dist(top,chin),fore=dist(foreL,foreR),cheek=dist(cheekL,cheekR),jaw=dist(jawL,jawR);
+ const ratio=height/Math.max(width,.001), fw=fore/width,cw=cheek/width,jw=jaw/width;
+ let shape='วงรีโดยประมาณ',why='ความยาวใบหน้าดูมากกว่าความกว้างเล็กน้อย และแนวกรามไม่เด่นกว่าช่วงโหนกแก้ม';
+ if(ratio<1.22){shape='กลมโดยประมาณ';why='ความยาวและความกว้างของใบหน้ามีค่าใกล้เคียงกัน';}
+ else if(jw<.70 && cw>jw*1.12){shape='หัวใจหรือกรามเรียวโดยประมาณ';why='ช่วงกรามแคบกว่าช่วงโหนกแก้มอย่างเห็นได้ชัด';}
+ else if(fw>.86 && jw>.78 && ratio>1.28){shape='เหลี่ยมหรือยาวโดยประมาณ';why='ช่วงหน้าผากและแนวกรามมีความกว้างใกล้เคียงกัน';}
+ else if(ratio>1.48){shape='ยาวโดยประมาณ';why='ความยาวใบหน้ามากกว่าความกว้างค่อนข้างชัด';}
+ const pct=n=>Math.round(n*100);
+ const hair=shape.includes('กลม')?'ลองทรงที่เพิ่มวอลลุ่มด้านบน หรือแสกข้างเพื่อเปลี่ยนลุคได้':shape.includes('หัวใจ')?'ลองเลเยอร์รอบกรอบหน้า หรือความยาวระดับคางเพื่อทดลองหลายสไตล์':shape.includes('เหลี่ยม')?'ลองเลเยอร์นุ่ม ๆ หรือหน้าม้าปัดข้างหากชอบลุคที่กรอบหน้าดูละมุน':shape.includes('ยาว')?'ลองหน้าม้าหรือเลเยอร์ด้านข้างเพื่อสร้างความหลากหลาย':'ลองได้ทั้งผมสั้นมีเลเยอร์ ผมยาว หรือแสกข้างตามสไตล์ที่ชอบ';
+ return {shape,why,ratio,fore:pct(fw),cheek:pct(cw),jaw:pct(jw),hair};
+}
+scanBtn.onclick=async()=>{
+ try{
+  if(video.readyState<2)throw new Error('รอสักครู่ กล้องยังเตรียมภาพไม่เสร็จ');
+  scanBtn.disabled=true;setStatus('กำลังวิเคราะห์จุดบนใบหน้า');
+  const model=await loadModel();const out=model.detect(video);
+  if(!out.faceLandmarks?.length){results.innerHTML='<div class="result-empty">ยังตรวจไม่พบใบหน้า ลองหันหน้าตรง เพิ่มแสง และขยับให้อยู่กลางกรอบ</div>';setStatus('ไม่พบใบหน้าในภาพ');return;}
+  const pts=out.faceLandmarks[0];lastLandmarks=pts;drawPoints(pts);
+  const a=analyze(pts);
+  results.innerHTML=`
+   <div class="metric"><small>รูปทรงใบหน้าโดยประมาณ</small><strong>${a.shape}</strong><p>${a.why}</p></div>
+   <div class="metric"><small>อัตราส่วนความยาวต่อความกว้าง</small><strong>${a.ratio.toFixed(2)} : 1</strong><p>คำนวณจากจุดกึ่งกลางแนวหน้าผากถึงคาง เทียบกับความกว้างใบหน้าโดยประมาณ</p></div>
+   <div class="metric"><small>ความกว้างสัมพัทธ์ของแต่ละช่วง</small>
+    <p>หน้าผาก</p><div class="bar"><i style="width:${Math.min(100,a.fore)}%"></i></div>
+    <p>โหนกแก้ม</p><div class="bar"><i style="width:${Math.min(100,a.cheek)}%"></i></div>
+    <p>แนวกราม</p><div class="bar"><i style="width:${Math.min(100,a.jaw)}%"></i></div>
+   </div>
+   <div class="metric"><small>ไอเดียทรงผม</small><strong style="font-size:16px">ตัวเลือกที่ลองได้</strong><p>${a.hair}</p></div>
+   <div class="note">ค่าความกว้างเป็นสัดส่วนเทียบกับความกว้างใบหน้า ไม่ใช่คะแนนหรือมาตรฐานความงาม</div>`;
+  setStatus('วิเคราะห์เสร็จแล้ว — จุดสีม่วงแสดงตำแหน่งใบหน้าที่ตรวจพบ');
+ }catch(e){setStatus('เกิดข้อผิดพลาด: '+e.message);results.innerHTML='<div class="result-empty">ระบบวิเคราะห์ยังไม่พร้อม โปรดลองใหม่อีกครั้งและตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</div>';}
+ finally{scanBtn.disabled=false;}
+};
+window.addEventListener('beforeunload',()=>{if(stream)stream.getTracks().forEach(t=>t.stop());});
+</script>
+</body>
+</html>
